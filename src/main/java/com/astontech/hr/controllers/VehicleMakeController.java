@@ -139,37 +139,41 @@ public class VehicleMakeController {
     //Add a new model to the existing vehicleMake
     @RequestMapping(value = "/admin/vehicleMake/addModel", method = RequestMethod.POST)
     public String addVehicleModel(@RequestParam("vehicleMakeId") int vehicleMakeId, @RequestParam("newModelName") String newModelName, RedirectAttributes redirectAttributes, Model model) {
-            // Fetch the VehicleMake object by ID
-            VehicleMake vehicleMake = vehicleMakeService.findVehicleMakeById(vehicleMakeId);
+            try {
+                // Fetch the VehicleMake object by ID
+                VehicleMake vehicleMake = vehicleMakeService.findVehicleMakeById(vehicleMakeId);
 
-            //Check to see if an empty field was submitted
-            if (vehicleMake == null) {
-                redirectAttributes.addFlashAttribute("errorAlert", "Vehicle Make not found.");
+                //Check to see if an empty field was submitted
+                if (vehicleMake == null) {
+                    redirectAttributes.addFlashAttribute("errorAlert", "Vehicle Make not found.");
+                    return "redirect:/admin/vehicleMake/list";
+                }
+
+                //Create new VehicleModel
+                if (newModelName != null && !newModelName.trim().isEmpty()) {
+                    VehicleModel newModel = new VehicleModel();
+                    newModel.setModelName(newModelName);
+                    newModel.setVehicleMake(vehicleMake);
+
+                    //Save VehicleModel to the database
+                    vehicleModelService.saveVehicleModel(newModel);
+
+                    //Add the new model to the vehicle make's model list
+                    vehicleMake.getVehicleModelList().add(newModel);
+
+                    //Update the vehicle make in the database
+                    vehicleMakeService.updateVehicleMake(vehicleMake);
+
+                    //Add success message to redirect attributes
+                    redirectAttributes.addFlashAttribute("successAlert", "visible");
+                } else {
+                    //Add error message to redirect attributes
+                    redirectAttributes.addFlashAttribute("errorAlert", "visible");
+                }
                 return "redirect:/admin/vehicleMake/list";
+            } catch (DuplicateEntityException e) {
+                return "redirect:/admin/vehicleMake/error";
             }
-
-            //Create new VehicleModel
-            if (newModelName != null && !newModelName.trim().isEmpty()) {
-                VehicleModel newModel = new VehicleModel();
-                newModel.setModelName(newModelName);
-                newModel.setVehicleMake(vehicleMake);
-
-                //Save VehicleModel to the database
-                vehicleModelService.saveVehicleModel(newModel);
-
-                //Add the new model to the vehicle make's model list
-                vehicleMake.getVehicleModelList().add(newModel);
-
-                //Update the vehicle make in the database
-                vehicleMakeService.updateVehicleMake(vehicleMake);
-
-                //Add success message to redirect attributes
-                redirectAttributes.addFlashAttribute("successAlert", "visible");
-            } else {
-                //Add error message to redirect attributes
-                redirectAttributes.addFlashAttribute("errorAlert", "visible");
-            }
-            return "redirect:/admin/vehicleMake/list";
     }
 
     //Display form to add a new vehicle model

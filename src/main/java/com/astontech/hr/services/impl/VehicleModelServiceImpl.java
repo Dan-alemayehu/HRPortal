@@ -48,6 +48,11 @@ public class VehicleModelServiceImpl implements VehicleModelService {
     @Override
     @Transactional
     public VehicleModel saveVehicleModel(VehicleModel vehicleModel) {
+        VehicleModel temp = vehicleModelRepository.findVehicleModelByModelNameIgnoreCase(vehicleModel.getModelName());
+        if (temp != null) {
+            System.out.println(temp.toString());
+            throw new DuplicateEntityException("Vehicle model already exists: " + vehicleModel.getModelName());
+        }
         return vehicleModelRepository.save(vehicleModel);
     }
 
