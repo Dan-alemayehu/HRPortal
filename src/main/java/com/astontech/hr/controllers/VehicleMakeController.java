@@ -114,38 +114,46 @@ public class VehicleMakeController {
 
     //Add a new model to the existing vehicleMake
     @RequestMapping(value = "/admin/vehicleMake/addModel", method = RequestMethod.POST)
-    public String addVehicleModel(@RequestParam("vehicleMakeId") int vehicleMakeId, @RequestParam("newModelName") String newModelName, RedirectAttributes redirectAttributes, Model model) {
-            // Fetch the VehicleMake object by ID
-            VehicleMake vehicleMake = vehicleMakeService.findVehicleMakeById(vehicleMakeId);
+    public String addVehicleModel(@RequestParam("vehicleMakeId") int vehicleMakeId,
+                                  @RequestParam("newModelName") String newModelName,
+                                  RedirectAttributes redirectAttributes,
+                                  Model model) {
+        // Fetch the VehicleMake object by ID
+        VehicleMake vehicleMake = vehicleMakeService.findVehicleMakeById(vehicleMakeId);
 
-            //Check to see if an empty field was submitted
-            if (vehicleMake == null) {
-                redirectAttributes.addFlashAttribute("errorAlert", "Vehicle Make not found.");
-                return "redirect:/admin/vehicleMake/list";
-            }
+        // Check to see if an empty field was submitted
+        if (vehicleMake == null) {
+            redirectAttributes.addFlashAttribute("errorAlert", "Vehicle Make not found.");
+            return "redirect:/admin/vehicleMake/list";
+        }
 
-            //Create new VehicleModel
-            if (newModelName != null && !newModelName.trim().isEmpty()) {
-                VehicleModel newModel = new VehicleModel();
-                newModel.setModelName(newModelName);
-                newModel.setVehicleMake(vehicleMake);
+        // Create new VehicleModel
+        if (newModelName != null && !newModelName.trim().isEmpty()) {
+            VehicleModel newModel = new VehicleModel();
+            newModel.setModelName(newModelName);
+            newModel.setVehicleMake(vehicleMake);
 
-                // Add the new model to the vehicle make's model list
-                vehicleMake.getVehicleModelList().add(newModel);
+            // Save the new model to the database first
+            vehicleModelService.saveVehicleModel(newModel);
 
-                // Save the updated vehicle make to the database
-                vehicleMakeService.updateVehicleMake(vehicleMake);
+            // Re-fetch the updated VehicleMake object to avoid stale state issues
+            vehicleMake = vehicleMakeService.findVehicleMakeById(vehicleMakeId);
 
-                // Save the new model separately if needed
-                vehicleModelService.saveVehicleModel(newModel);
+            // Add the new model to the vehicle make's model list
+            vehicleMake.getVehicleModelList().add(newModel);
 
-                redirectAttributes.addFlashAttribute("successAlert", "Vehicle model added successfully.");
-            } else {
-                redirectAttributes.addFlashAttribute("errorAlert", "Model name cannot be empty.");
-            }
+            // Save the updated vehicle make to the database
+            vehicleMakeService.updateVehicleMake(vehicleMake);
+
+            redirectAttributes.addFlashAttribute("successAlert", "Vehicle model added successfully.");
+        } else {
+            redirectAttributes.addFlashAttribute("errorAlert", "Model name cannot be empty.");
+        }
 
         return "redirect:/admin/vehicleMake/list";
     }
+
+
 
     //Display form to add a new vehicle model
     @RequestMapping(value = "/admin/vehicle/add/{modelId}", method = RequestMethod.GET)

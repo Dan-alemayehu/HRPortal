@@ -12,8 +12,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityNotFoundException;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 @Service
 public class VehicleMakeServiceImpl implements VehicleMakeService {
@@ -53,22 +55,57 @@ public class VehicleMakeServiceImpl implements VehicleMakeService {
         if (temp == null)
             throw new EntityNotFoundException(String.format("Entity with id { %s } does not exist!", vehicleMake.getId()));
 
-        // Checking to see if another entity has the same name but a different id
+        // Check for duplicate make name with a different id
         VehicleMake existingVM = vehicleMakeRepository.findVehicleMakeByVehicleMakeNameEqualsIgnoreCase(vehicleMake.getVehicleMakeName());
         if (existingVM != null && !Objects.equals(existingVM.getId(), temp.getId())) {
             throw new DuplicateEntityException("Vehicle make already exists: " + vehicleMake.getVehicleMakeName());
         }
 
-        temp.setVehicleMakeName(vehicleMake.getVehicleMakeName());
-        temp.setVehicleModels(vehicleMake.getVehicleModelList());
-//        for (VehicleModel vehicleModel : vehicleModelRepository.findAll()) {
-//            if (vehicleModel.getVehicleMake().equals(temp)) {
-//                throw new DuplicateEntityException("Vehicle make already exists: " + vehicleMake.getVehicleMakeName());
-//            }
-//        }
-        vehicleMakeRepository.save(temp);
+        // Check for duplicate model names in the updated list
+        Set<String> modelNames = new HashSet<>();
+        for (VehicleModel model : vehicleMake.getVehicleModelList()) {
+            // Check if the model name already exists in the set
+            if (modelNames.contains(model.getModelName().toLowerCase())) {
+                throw new DuplicateEntityException("Duplicate model name found: " + model.getModelName());
+            }
+            // Add model name to the set
+            modelNames.add(model.getModelName().toLowerCase());
+        }
 
+        // Update each VehicleModel to have a reference to the current VehicleMake
+        for (VehicleModel model : vehicleMake.getVehicleModelList()) {
+            model.setVehicleMake(vehicleMake); // Set the relationship correctly
+
+            // Ensure the model is a managed entity before saving the vehicle make
+            if (model.getId() == 0) {
+                vehicleModelService.saveVehicleModel(model); // Save only new models to persist their IDs
+            }
+        }
+
+        // Update the vehicle make's name
+        temp.setVehicleMakeName(vehicleMake.getVehicleMakeName());
+
+        // Remove models from temp not in vehicleMake to handle orphan removal
+        temp.getVehicleModelList().removeIf(model -> !vehicleMake.getVehicleModelList().contains(model));
+
+        // Add or update the models in the vehicle make
+        for (VehicleModel model : vehicleMake.getVehicleModelList()) {
+            if (!temp.getVehicleModelList().contains(model)) {
+                temp.getVehicleModelList().add(model); // Add new models to the list
+            } else {
+                VehicleModel existingModel = temp.getVehicleModelList().stream()
+                        .filter(m -> m.getId() == model.getId())
+                        .findFirst()
+                        .orElse(null);
+                if (existingModel != null) {
+                    existingModel.setModelName(model.getModelName()); // Update the model name if it exists
+                }
+            }
+        }
+
+        vehicleMakeRepository.save(temp);
     }
+
 
     @Override
     public VehicleMake findVehicleMakeById(int vehicleMakeId) {
