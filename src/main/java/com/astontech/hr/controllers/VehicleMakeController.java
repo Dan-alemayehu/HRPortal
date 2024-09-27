@@ -15,9 +15,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 @Controller
 //@RequestMapping("admin/vehicleMake")
@@ -289,25 +287,26 @@ public class VehicleMakeController {
     private void saveMakesAndModelsFromVO(VehicleMakeVO vehicleMakeVO) {
         List<VehicleModel> newVehicleModels = new ArrayList<>();
         VehicleMake newVehicleMake = new VehicleMake(vehicleMakeVO.getNewVehicleMakeName());
+        Set<String> modelNames = new HashSet<>();
 
-        for(String str : vehicleMakeVO.getNewVehicleModelArray()) {
-            VehicleModel vehicleModel = new VehicleModel(str);
+        for (String str : vehicleMakeVO.getNewVehicleModelArray()) {
+            // Check if the model name already exists in the set (case insensitive)
+            if (modelNames.contains(str.trim().toLowerCase())) {
+                throw new DuplicateEntityException("Duplicate vehicle model found: " + str);
+            }
+
+            // Add model name to the set
+            modelNames.add(str.trim().toLowerCase());
+
+            VehicleModel vehicleModel = new VehicleModel(str.trim());
             vehicleModel.setVehicleMake(newVehicleMake);
             newVehicleModels.add(vehicleModel);
         }
-        newVehicleMake.setVehicleModels(newVehicleModels);
 
-                    // Check if vehicle model name is already in use by another vehicle
-//            VehicleMake existingVehicleMake = vehicleMakeService.findByVehicleMakeNameIgnoreCase(newVehicleMake.getVehicleMakeName());
-//            if (existingVehicleMake != null && !Objects.equals(existingVehicleMake.getId(), newVehicleMake.getId())) {
-//                // Duplicate VIN detected, return to edit page with a warning message
-//                model.addAttribute("vehicleMake", newVehicleMake);
-//                model.addAttribute("errorAlert", "visible");
-//                model.addAttribute("errorMessage", "VIN already in use by another vehicle.");
-//                return;
-//            }
+        newVehicleMake.setVehicleModels(newVehicleModels);
 
         vehicleMakeService.saveVehicleMake(newVehicleMake);
     }
+
 
 }

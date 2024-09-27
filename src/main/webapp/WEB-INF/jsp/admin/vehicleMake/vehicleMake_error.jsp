@@ -28,7 +28,7 @@
             <div class="col-sm-8">
                 <h1>WOOPSIES</h1>
                 <h2>You've hit an error page!</h2>
-                <h3>There is already a vehicle Make with the same name. Go Back or redirect through
+                <h3>There is already a vehicle make/model with the same name. Go Back or redirect through
                     the navigation menus and try again.</h3>
                 <h2>Make sure you use a different name this time!</h2>
 
