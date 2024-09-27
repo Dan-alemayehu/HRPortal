@@ -19,7 +19,7 @@ public class VehicleMake {
     private Integer version;
     private String vehicleMakeName;
     private LocalDate createDate;
-    @OneToMany(mappedBy ="vehicleMake", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @OneToMany(mappedBy ="vehicleMake", cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
     private List<VehicleModel> vehicleModelList = new ArrayList<>();
     //endregion
 

@@ -61,6 +61,11 @@ public class VehicleMakeServiceImpl implements VehicleMakeService {
 
         temp.setVehicleMakeName(vehicleMake.getVehicleMakeName());
         temp.setVehicleModels(vehicleMake.getVehicleModelList());
+//        for (VehicleModel vehicleModel : vehicleModelRepository.findAll()) {
+//            if (vehicleModel.getVehicleMake().equals(temp)) {
+//                throw new DuplicateEntityException("Vehicle make already exists: " + vehicleMake.getVehicleMakeName());
+//            }
+//        }
         vehicleMakeRepository.save(temp);
 
     }

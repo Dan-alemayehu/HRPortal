@@ -104,30 +104,6 @@ public class VehicleMakeController {
     //Handle form submission to update vehicle make
     @RequestMapping(value = "/admin/vehicleMake/edit", method = RequestMethod.POST)
     public String VehicleMakeUpdate(Model model, VehicleMake vehicleMake){
-        // Fetch the original object from the database
-//        VehicleMake originalVehicleMake = vehicleMakeService.findVehicleMakeById(vehicleMake.getId());
-//
-//        // Check if the vehicle make name has changed
-//        if (!originalVehicleMake.getVehicleMakeName().equals(vehicleMake.getVehicleMakeName())) {
-//            originalVehicleMake.setVehicleMakeName(vehicleMake.getVehicleMakeName());
-//            vehicleMakeService.saveVehicleMake(vehicleMake);
-//        }
-//
-        //notes:    iterate through the list of elements
-//        for(int i = 0; i < vehicleMake.getVehicleModelList().size(); i++) {
-//            vehicleModelService.saveVehicleModel(vehicleModel);
-//            vehicleMakeService.
-//        }
-
-//        List<VehicleModel> newVehicleModels = new ArrayList<>();
-//        VehicleMake newVehicleMake = new VehicleMake(vehicleMake.getVehicleMakeName());
-//
-//        for(String str : vehicleMake.getNewVehicleModelArray()) {
-//            VehicleModel vehicleModel = new VehicleModel(str);
-//            vehicleModel.setVehicleMake(newVehicleMake);
-//            newVehicleModels.add(vehicleModel);
-//        }
-//        newVehicleMake.setVehicleModels(newVehicleModels);
         try {
             vehicleMakeService.updateVehicleMake(vehicleMake);
             return "redirect:/admin/vehicleMake/list/";
@@ -154,22 +130,21 @@ public class VehicleMakeController {
                 newModel.setModelName(newModelName);
                 newModel.setVehicleMake(vehicleMake);
 
-                //Save VehicleModel to the database
-                vehicleModelService.saveVehicleModel(newModel);
-
-                //Add the new model to the vehicle make's model list
+                // Add the new model to the vehicle make's model list
                 vehicleMake.getVehicleModelList().add(newModel);
 
-                //Update the vehicle make in the database
+                // Save the updated vehicle make to the database
                 vehicleMakeService.updateVehicleMake(vehicleMake);
 
-                //Add success message to redirect attributes
-                redirectAttributes.addFlashAttribute("successAlert", "visible");
+                // Save the new model separately if needed
+                vehicleModelService.saveVehicleModel(newModel);
+
+                redirectAttributes.addFlashAttribute("successAlert", "Vehicle model added successfully.");
             } else {
-                //Add error message to redirect attributes
-                redirectAttributes.addFlashAttribute("errorAlert", "visible");
+                redirectAttributes.addFlashAttribute("errorAlert", "Model name cannot be empty.");
             }
-            return "redirect:/admin/vehicleMake/list";
+
+        return "redirect:/admin/vehicleMake/list";
     }
 
     //Display form to add a new vehicle model
