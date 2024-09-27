@@ -65,7 +65,6 @@
                             </td>
                             <td>${vehicle.purchasePrice}</td>
                             <td><a href="/admin/vehicle/edit/${vehicle.id}">Edit</a></td>
-                            <td><a href="/admin/vehicle/delete/${vehicle.id}">Delete</a></td>
                             <td><a href="/admin/vehicle/delete/${vehicle.id}" class="btn btn-danger"
                                 onclick="return confirm('Are you sure you want to delete this vehicle?');">Delete</a>
                             </td>

@@ -35,7 +35,8 @@
                     <th>Make</th>
                     <th>Model</th>
                     <th>Create Date</th>
-                    <th>Actions</th>
+                    <th>Edit</th>
+                    <th>Delete</th>
                 </tr>
                 </thead>
                 <tbody>
